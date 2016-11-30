@@ -14,10 +14,10 @@ STM_COMMON=/home/kamil/workspace/stm32_discovery_arm_gcc/STM32F4-Discovery_FW_V1
 # Normally you shouldn't need to change anything below this line!
 #######################################################################################
 
-CC=arm-none-eabi-gcc
+CC=arm-none-eabi-g++
 OBJCOPY=arm-none-eabi-objcopy
 
-CFLAGS  = -g -O2 -Wall -Tstm32_flash.ld
+CFLAGS  = -g -O0 -Wall -Tstm32_flash.ld -std=c++11 -specs=nosys.specs #-lc before specs
 CFLAGS += -mlittle-endian -mthumb -mcpu=cortex-m4 -mthumb-interwork
 CFLAGS += -mfloat-abi=hard -mfpu=fpv4-sp-d16
 CFLAGS += -I.

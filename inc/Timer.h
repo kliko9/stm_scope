@@ -1,21 +1,21 @@
+#pragma once
+
 #include "stm32f4xx.h"
 
 namespace util {
 
-	class Timer {
-	public:
+	struct Timer {
 		typedef void (*TimerCb)(void *data);
 
-		Timer();
-		Timer(unsigned int time_ms, TimerCb cb);
+		Timer(TimerCb cb, unsigned time, void *data, bool renew = true);
 		~Timer();
 
-	private:
 		TimerCb cb_;
-		unsigned int time_ms_;
+		unsigned time_;
+		unsigned callTime_;
+		void *data_;
+		bool renew_;
 
-		static bool SysTickInit();
-		static void SysTickDeinit();
 	};
 
 }

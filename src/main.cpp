@@ -1,5 +1,6 @@
 #include "stm32f4xx.h"
-#include "core_cm4.h"
+
+#include "Timer.h"
 
 void GPIOInit() {
 
@@ -27,26 +28,33 @@ void TimerInit() {
 	TIM1->CR1 |= 1;
 }
 
-void SysTick_Handler()
-{
-	static int i;
-	if (i++ >= 1000) {
-		i = 0;
-		GPIOD->ODR ^= ((uint32_t)1<<15);
-	}
+void TestCb(void *data) {
+
+	GPIOD->ODR ^= ((uint32_t)1<<15);
 }
 
+void Test2Cb(void *data) {
+
+	GPIOD->ODR ^= ((uint32_t)1<<14);
+}
 
 void MainInit() {
 
 	GPIOInit();
 	TimerInit();
+
 }
 
 int main(void)
 {
 	MainInit();
 
+	util::Timer *tim1 = new util::Timer(TestCb, 1000, nullptr);
+	util::Timer *tim2 = new util::Timer(Test2Cb, 500, nullptr);
+
 	while(1) {
 	}
+
+	delete tim1;
+	delete tim2;
 }
