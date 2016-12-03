@@ -9,7 +9,7 @@ void USART1_IRQHandler()
 	if ((USART1->SR & 1 << 7) == 0)
 		return;
 
-	USART1->DR = 'A';
+	USART1->DR = ('A' & (uint16_t)0x01FF);
 }
 }
 
@@ -41,22 +41,22 @@ void UART::UARTInit()
 	RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 
 	/* Set baudrate to 9600
-	 * Programmed value with 84Mhz is 1093.75
-	 * Fraction: 16 * 0.75 = 12 = 0xC
-	 * Mantissa: 1093 = 0x445
+	 * Programmed value with 84Mhz is 546.875
+	 * Fraction: 16 * 0.875 = 14 = 0xE
+	 * Mantissa: 546 = 0x222;
 	 */
 
-	USART1->CR1 |= USART_CR1_UE;	//enable uart and interrupt on data shift
-	//USART1->BRR = 0x445C;				//set baudrate 9600
-	USART1->BRR = 0x0000002D9;			//set baudrate 115226
-	USART1->CR2 |= USART_CR2_STOP_0;		//set number of stop bits to 2
-	//USART1->CR1 &= ~(1 << );			//set mantysa, 0 is by default which is 8 bits
+	USART1->CR1 |= USART_CR1_UE;			//enable uart and interrupt on data shift
+	USART1->BRR = 0x222E;				//set baudrate 9600
+	//USART1->BRR = 0x0000002D9;			//set baudrate 115226
+	//USART1->CR2 |= (2UL << );			//set number of stop bits to 2
+	//USART1->CR1 |= (1UL << 12);			//set mantysa, 0 is by default which is 8 bits
 	//USART1->CR3 |= (DMAT dma enable for now not);	//enable dma
 
-	USART1->CR1 |= USART_CR1_TE | USART_CR1_TXEIE;
+	USART1->CR1 |= USART_CR1_TE;
 
-	NVIC_SetPriority(USART1_IRQn, 0);
-	NVIC_EnableIRQ(USART1_IRQn);
+	//NVIC_SetPriority(USART1_IRQn, 0);
+	//NVIC_EnableIRQ(USART1_IRQn);
 }
 
 void UART::SendString(const char *string)
@@ -66,9 +66,12 @@ void UART::SendString(const char *string)
 	}
 }
 
-void UART::SendData(const uint8_t &data)
+void UART::SendData(const uint16_t data)
 {
-	USART1->DR = data;
+	//USART1->CR1 |= USART_CR1_TXEIE;
+
+	while ((USART1->SR & 1 << 7) == 0) {};
+	USART1->DR = ('a' & (uint16_t)0x01FF);
 }
 
 } // system

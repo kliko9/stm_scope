@@ -9,7 +9,7 @@ public:
 	UART();
 	virtual ~UART();
 
-	void SendData(const uint8_t &data);
+	void SendData(const uint16_t data);
 	void SendString(const char *string);
 
 private:

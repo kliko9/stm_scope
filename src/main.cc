@@ -55,11 +55,11 @@ int main(void)
 
 	system::UART uart;
 
-	//auto uartCb = [&uart](void *data) { uart.SendData('1'); };
+	auto uartCb = [&uart](void *data) { uart.SendData('H'); };
 
-	//utils::Timer uartTim(uartCb, 500, nullptr);
+	utils::Timer uartTim(uartCb, 50, nullptr);
 
-	uart.SendData('G');
+	//uart.SendData('G');
 
 	while(1) {
 	}
