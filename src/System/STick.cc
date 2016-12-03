@@ -1,13 +1,13 @@
 #include "stm32f4xx.h"
 #include "core_cm4.h"
 
-#include "STick.h"
+#include "System/STick.h"
 
 extern "C" {
 
 void SysTick_Handler()
 {
-	using namespace util;
+	using namespace system;
 
 	auto callbacks = STick::Instance().Callbacks();
 
@@ -29,11 +29,11 @@ void SysTick_Handler()
 
 }
 
-namespace util {
+
+namespace system {
 
 STick &STick::Instance()
 {
-
 	static STick instance;
 	return instance;
 }
@@ -41,6 +41,7 @@ STick &STick::Instance()
 STick::STick()
 {
 	SysTick_Config(SystemCoreClock/1000);
+	NVIC_SetPriority(SysTick_IRQn, 0);
 }
 
 STick::~STick()
@@ -49,19 +50,19 @@ STick::~STick()
 }
 
 
-std::list<util::Timer *> *STick::Callbacks()
+std::list<utils::Timer *> *STick::Callbacks()
 {
 	return &callbacks_;
 }
 
-void STick::RegisterCallback(util::Timer *timer)
+void STick::RegisterCallback(utils::Timer *timer)
 {
 	timer->callTime_ = count_ + timer->time_;
 
 	callbacks_.push_back(timer);
 }
 
-void STick::UnregisterCallback(util::Timer *timer)
+void STick::UnregisterCallback(utils::Timer *timer)
 {
 	callbacks_.remove(timer);
 }
@@ -76,4 +77,4 @@ unsigned STick::Count()
 	return count_;
 }
 
-} // util
+} // utils

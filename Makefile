@@ -3,7 +3,7 @@
 STLINK=/home/kamil/workspace/stlink/build/Release/
 
 # Put your source files here (or *.c, etc)
-SRCS=src/*.c src/*.cpp
+SRCS=src/*.c src/*.cc src/Utils/*.cc src/System/*.cc
 
 # Binaries will be generated with this name (.elf, .bin, .hex, etc)
 PROJ_NAME=scope

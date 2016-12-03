@@ -1,6 +1,8 @@
 #include "stm32f4xx.h"
+#include <functional>
 
-#include "Timer.h"
+#include "Utils/Timer.h"
+#include "System/UART.h"
 
 void GPIOInit() {
 
@@ -35,7 +37,6 @@ void TestCb(void *data) {
 
 void Test2Cb(void *data) {
 
-	GPIOD->ODR ^= ((uint32_t)1<<14);
 }
 
 void MainInit() {
@@ -49,12 +50,17 @@ int main(void)
 {
 	MainInit();
 
-	util::Timer *tim1 = new util::Timer(TestCb, 1000, nullptr);
-	util::Timer *tim2 = new util::Timer(Test2Cb, 500, nullptr);
+	utils::Timer tim1(TestCb, 1000, nullptr);
+	//utils::Timer tim2(Test2Cb, 500, nullptr);
+
+	system::UART uart;
+
+	//auto uartCb = [&uart](void *data) { uart.SendData('1'); };
+
+	//utils::Timer uartTim(uartCb, 500, nullptr);
+
+	uart.SendData('G');
 
 	while(1) {
 	}
-
-	delete tim1;
-	delete tim2;
 }
