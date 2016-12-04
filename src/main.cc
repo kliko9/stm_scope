@@ -3,6 +3,7 @@
 
 #include "Utils/Timer.h"
 #include "System/UART.h"
+#include "System/ADConverter.h"
 
 void GPIOInit() {
 
@@ -43,7 +44,6 @@ void MainInit() {
 
 	GPIOInit();
 	TimerInit();
-
 }
 
 int main(void)
@@ -51,15 +51,10 @@ int main(void)
 	MainInit();
 
 	utils::Timer tim1(TestCb, 1000, nullptr);
-	//utils::Timer tim2(Test2Cb, 500, nullptr);
 
-	system::UART uart;
+	uart.SendData('G');
 
-	auto uartCb = [&uart](void *data) { uart.SendData('H'); };
-
-	utils::Timer uartTim(uartCb, 50, nullptr);
-
-	//uart.SendData('G');
+	system::ADConverter adc;
 
 	while(1) {
 	}

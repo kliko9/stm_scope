@@ -2,10 +2,10 @@
 
 namespace system {
 
-class ADC {
+class ADConverter {
 public:
-	ADC();
-	virtual ~ADC();
+	ADConverter();
+	virtual ~ADConverter();
 
 private:
 	void GPIOInit();

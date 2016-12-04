@@ -61,9 +61,8 @@ void UART::UARTInit()
 
 void UART::SendString(const char *string)
 {
-	while (*string++) {
+	while (*string++)
 		SendData(*string);
-	}
 }
 
 void UART::SendData(const uint16_t data)
