@@ -52,9 +52,17 @@ int main(void)
 
 	utils::Timer tim1(TestCb, 1000, nullptr);
 
-	uart.SendData('G');
+	sys::ADConverter adc;
 
-	system::ADConverter adc;
+	sys::UART uart;
+
+	std::function<char()> fn = [&]()-> char {
+		return adc.CurrentValue();
+	};
+
+	uart.RegisterDataGetter(fn);
+
+	uart.BeginTransmission();
 
 	while(1) {
 	}

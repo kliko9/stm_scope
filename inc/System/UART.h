@@ -1,22 +1,24 @@
 #pragma once
 
+#include <functional>
+
 #include "stm32f4xx.h"
 
-namespace system {
+namespace sys {
 
 class UART {
 public:
 	UART();
 	virtual ~UART();
 
-	void SendData(const uint16_t data);
-	void SendString(const char *string);
+	void RegisterDataGetter(std::function<char()> &fn);
+
+	void BeginTransmission();
+	void StopTransmission();
 
 private:
-
 	void GPIOInit();
 	void UARTInit();
-
 };
 
 } // system
