@@ -4,7 +4,7 @@
 
 #include "Utils/Timer.h"
 
-namespace system {
+namespace sys {
 
 class STick {
 public:

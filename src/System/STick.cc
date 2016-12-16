@@ -7,7 +7,7 @@ extern "C" {
 
 void SysTick_Handler()
 {
-	using namespace system;
+	using namespace sys;
 
 	auto callbacks = STick::Instance().Callbacks();
 
@@ -30,7 +30,7 @@ void SysTick_Handler()
 }
 
 
-namespace system {
+namespace sys {
 
 STick &STick::Instance()
 {

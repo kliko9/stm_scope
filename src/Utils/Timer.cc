@@ -6,11 +6,11 @@ namespace utils {
 Timer::Timer(std::function<void(void*)> cb, unsigned time, void *data, bool renew)
 	: cb_(cb), time_(time), data_(data), renew_(renew)
 {
-	system::STick::Instance().RegisterCallback(this);
+	sys::STick::Instance().RegisterCallback(this);
 }
 
 Timer::~Timer() {
-	system::STick::Instance().UnregisterCallback(this);
+	sys::STick::Instance().UnregisterCallback(this);
 }
 
 }

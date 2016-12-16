@@ -1,15 +1,20 @@
+#include <string>
 #include "System/UART.h"
 
-namespace system {
+namespace sys {
+
+std::function<char()> dataGetter;
 
 extern "C" {
 void USART1_IRQHandler()
 {
-	//while ((USART1->SR & 1 << 7) == 0) {};
-	if ((USART1->SR & 1 << 7) == 0)
-		return;
+	if (USART1->SR & USART_SR_RXNE) {
 
-	USART1->DR = ('A' & (uint16_t)0x01FF);
+	} else if (USART1->SR & USART_SR_TXE) {
+		//USART1->DR = ('a' & (uint16_t)0x01FF);
+		char data = dataGetter();
+		USART1->DR = data;
+	}
 }
 }
 
@@ -26,8 +31,8 @@ UART::~UART()
 void UART::GPIOInit()
 {
 	/* USART1
-	 * Pb6	TX
-	 * PA7	RX
+	 * PB6	TX
+	 * PB7	RX
 	 */
 	RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
 	GPIOB->OSPEEDR |= (2UL << 12) | (2UL << 14);	//set 50 MHz speed
@@ -52,25 +57,32 @@ void UART::UARTInit()
 	//USART1->CR2 |= (2UL << );			//set number of stop bits to 2
 	//USART1->CR1 |= (1UL << 12);			//set mantysa, 0 is by default which is 8 bits
 	//USART1->CR3 |= (DMAT dma enable for now not);	//enable dma
+	//USART1->CR1 |= USART_CR1_RXNEIE;
 
+
+	NVIC_SetPriority(USART1_IRQn, 0);
+	NVIC_EnableIRQ(USART1_IRQn);
+}
+
+void UART::BeginTransmission()
+{
+	USART1->CR1 |= USART_CR1_TXEIE;
 	USART1->CR1 |= USART_CR1_TE;
 
-	//NVIC_SetPriority(USART1_IRQn, 0);
-	//NVIC_EnableIRQ(USART1_IRQn);
-}
-
-void UART::SendString(const char *string)
-{
-	while (*string++)
-		SendData(*string);
-}
-
-void UART::SendData(const uint16_t data)
-{
-	//USART1->CR1 |= USART_CR1_TXEIE;
-
 	while ((USART1->SR & 1 << 7) == 0) {};
+
 	USART1->DR = ('a' & (uint16_t)0x01FF);
+}
+
+void UART::StopTransmission()
+{
+	USART1->CR1 &= ~USART_CR1_TXEIE;
+	USART1->CR1 &= ~USART_CR1_TE;
+}
+
+void UART::RegisterDataGetter(std::function<char()> &fn)
+{
+	dataGetter = fn;
 }
 
 } // system
