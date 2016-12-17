@@ -1,5 +1,7 @@
 #include "stm32f4xx.h"
+
 #include <functional>
+#include <cstring>
 
 #include "Utils/Timer.h"
 #include "System/UART.h"
@@ -15,54 +17,34 @@ void GPIOInit() {
 	GPIOD->PUPDR |= ((uint32_t)1 << 30) | ((uint32_t) 1 << 28);
 }
 
-void TimerInit() {
+void RedLedToggle(void *data) {
 
-	RCC->APB2ENR |= RCC_APB2ENR_TIM1EN;
-	TIM1->CR1 |= (1 << 2) | (1 << 4) | (1 << 1);
-	TIM1->PSC = SystemCoreClock / 1000000 - 1;	//Set prescaler so timer's frequency is 1MHz
-	TIM1->ARR = 1000;
-	TIM1->RCR = 50;
-
-	/*
-	TIM->RCR+1 <= sets repetition counter, if counting finishes UEV update event is generated
-	check UIF register
-	*/
-
-	TIM1->CR1 |= 1;
-}
-
-void TestCb(void *data) {
-
-	GPIOD->ODR ^= ((uint32_t)1<<15);
-}
-
-void Test2Cb(void *data) {
-
-}
-
-void MainInit() {
-
-	GPIOInit();
-	TimerInit();
+	GPIOD->ODR ^= ((uint32_t)1<<14);
 }
 
 int main(void)
 {
-	MainInit();
+	GPIOInit();
 
-	utils::Timer tim1(TestCb, 1000, nullptr);
+	utils::Timer tim1(RedLedToggle, 1000, nullptr);
 
 	sys::ADConverter adc;
+	/* ECHO - device responds on received information by sending it back to source
 
-	sys::UART uart;
+	sys::UART::Instance().RegisterDataReceiver([](const char *data){
+			sys::UART::Instance().SendCmd(data, strlen(data) + 1);
+			}
+			);
+	*/
+
+	//sys::UART::Instance().SendCmd(UART_CMD_SET_NAME, strlen(UART_CMD_SET_NAME));
 
 	std::function<char()> fn = [&]()-> char {
 		return adc.CurrentValue();
 	};
 
-	uart.RegisterDataGetter(fn);
-
-	uart.BeginTransmission();
+	sys::UART::Instance().RegisterDataSetter(fn);
+	sys::UART::Instance().BeginTransmission();
 
 	while(1) {
 	}

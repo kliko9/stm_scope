@@ -3,19 +3,33 @@
 
 namespace sys {
 
-std::function<char()> dataGetter;
-
 extern "C" {
 void USART1_IRQHandler()
 {
 	if (USART1->SR & USART_SR_RXNE) {
+		char data = (USART1->DR & 0xFF);
+
+		UART::Instance().AppendBuffer(data);
+		//if (data == '\0')
+			for (auto &cb: UART::Instance().Receivers())
+				cb(UART::Instance().Buffer());
 
 	} else if (USART1->SR & USART_SR_TXE) {
-		//USART1->DR = ('a' & (uint16_t)0x01FF);
-		char data = dataGetter();
-		USART1->DR = data;
+		auto setter = UART::Instance().Setter();
+		if (setter)
+			USART1->DR = setter();
+		else {
+			USART1->CR1 &= ~USART_CR1_TXEIE;
+			USART1->CR1 &= ~USART_CR1_TE;
+		}
 	}
 }
+}
+
+UART &UART::Instance()
+{
+	static UART instance;
+	return instance;
 }
 
 UART::UART()
@@ -52,13 +66,12 @@ void UART::UARTInit()
 	 */
 
 	USART1->CR1 |= USART_CR1_UE;			//enable uart and interrupt on data shift
-	USART1->BRR = 0x222E;				//set baudrate 9600
-	//USART1->BRR = 0x0000002D9;			//set baudrate 115226
+	//USART1->BRR = 0x222E;				//set baudrate 9600
+	USART1->BRR = 0x0000002D9;			//set baudrate 115226
 	//USART1->CR2 |= (2UL << );			//set number of stop bits to 2
 	//USART1->CR1 |= (1UL << 12);			//set mantysa, 0 is by default which is 8 bits
 	//USART1->CR3 |= (DMAT dma enable for now not);	//enable dma
 	//USART1->CR1 |= USART_CR1_RXNEIE;
-
 
 	NVIC_SetPriority(USART1_IRQn, 0);
 	NVIC_EnableIRQ(USART1_IRQn);
@@ -66,23 +79,68 @@ void UART::UARTInit()
 
 void UART::BeginTransmission()
 {
-	USART1->CR1 |= USART_CR1_TXEIE;
-	USART1->CR1 |= USART_CR1_TE;
-
-	while ((USART1->SR & 1 << 7) == 0) {};
-
-	USART1->DR = ('a' & (uint16_t)0x01FF);
+	USART1->CR1 |= USART_CR1_TXEIE | USART_CR1_TE;
 }
 
 void UART::StopTransmission()
 {
-	USART1->CR1 &= ~USART_CR1_TXEIE;
-	USART1->CR1 &= ~USART_CR1_TE;
+	USART1->CR1 &= ~(USART_CR1_TXEIE | USART_CR1_TE);
 }
 
-void UART::RegisterDataGetter(std::function<char()> &fn)
+void UART::RegisterDataSetter(const std::function<char()> &fn)
 {
-	dataGetter = fn;
+	setter_ = fn;
+}
+
+void UART::RegisterDataReceiver(const std::function<void(const char *)> &fn)
+{
+	USART1->CR1 |= USART_CR1_RXNEIE | USART_CR1_RE;
+	receivers_.push_back(fn);
+}
+
+void UART::SendCmd(const char *cmd, unsigned length)
+{
+	cmd_ = cmd;
+	cmd_len_ = length;
+
+	RegisterDataSetter(
+			[this]()-> char {
+				return WriteCmd();
+			}
+		);
+
+	BeginTransmission();
+}
+
+char UART::WriteCmd()
+{
+	static unsigned idx;
+
+	if (!cmd_ || !cmd_len_)
+		return 0;
+
+	if (idx > cmd_len_) {
+		setter_ = nullptr;
+		cmd_ = nullptr;
+		cmd_len_ = 0;
+		idx = 0;
+
+		return 0;
+	}
+
+	return cmd_[idx++];
+}
+
+void UART::AppendBuffer(char s)
+{
+	if (buffer_idx_ > RECV_MAX_LENGTH - 2) {
+		buffer_[RECV_MAX_LENGTH - 1] = '\0';
+		buffer_idx_ = 0;
+	}
+
+	buffer_[buffer_idx_++] = s;
+	if (buffer_[buffer_idx_ - 1] == 0 || buffer_[buffer_idx_ - 1] == '\n')
+		buffer_idx_ = 0;
 }
 
 } // system
