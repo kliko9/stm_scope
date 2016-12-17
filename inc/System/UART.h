@@ -6,15 +6,15 @@
 
 #include "stm32f4xx.h"
 
-#define DEVICE_NAME "STM_SCOPE"
-#define DEVICE_PIN "0000"
+#define DEVICE_NAME "SCOPEX"			//default bt module name
+#define DEVICE_PIN "1234"			//default br module password
 
-#define UART_CMD_STATE "AT"
-#define UART_CMD_GET_ADDRESS "AT+ADDR"
-#define UART_CMD_SET_BAUD_9600 "AT+BAUD4"
-#define UART_CMD_SET_BAUD_115200 "AT+BAUD8"
-#define UART_CMD_SET_NAME "AT+NAME" DEVICE_NAME
-#define UART_CMD_SET_PIN "AT+PIN" DEVICE_PIN
+#define UART_CMD_STATE "AT"			//on AT command bt module responds "OK", only for connection check
+#define UART_CMD_GET_ADDRESS "AT+ADDR"		//return device address
+#define UART_CMD_SET_BAUD_9600 "AT+BAUD4" 	//setting baudrate for now does not have any sense, because bt module
+#define UART_CMD_SET_BAUD_115200 "AT+BAUD8"	//doesn't have baudrate checking command
+#define UART_CMD_SET_NAME "AT+NAME" DEVICE_NAME	//sets bt module name
+#define UART_CMD_SET_PIN "AT+PIN" DEVICE_PIN	//sets bt module pin password
 
 #define RECV_MAX_LENGTH 256
 
